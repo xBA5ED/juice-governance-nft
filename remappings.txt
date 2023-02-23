@@ -1,0 +1,4 @@
+@jbx-protocol/=node_modules/@jbx-protocol
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@paulrberg/contracts/math/=node_modules/@prb/math/src
+@prb/=node_modules/@prb/
