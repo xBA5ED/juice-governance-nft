@@ -13,6 +13,9 @@ contract JBGovernanceNFT is ERC721Votes {
     using Checkpoints for Checkpoints.History;
     using SafeERC20 for IERC20;
 
+    error NO_PERMISSION(uint256 _tokenId);
+    error INVALID_STAKE_AMOUNT(uint256 _i, uint256 _amount);
+
     IERC20 immutable token;
     mapping(address => uint256) stakingTokenBalance;
     mapping(uint256 => JBGovernanceNFTStake) stakes;
@@ -25,8 +28,10 @@ contract JBGovernanceNFT is ERC721Votes {
 
     function mint(JBGovernanceNFTMint[] calldata _mints) external returns (uint256 _tokenId) {
         for (uint256 _i; _i < _mints.length;) {
-            // Should never be more than a uint200
-            require(_mints[_i].stakeAmount <= type(uint200).max);
+            // Should never be more than a uint200 or 0
+            if (_mints[_i].stakeAmount == 0 || _mints[_i].stakeAmount > type(uint200).max) {
+                revert INVALID_STAKE_AMOUNT(_i, _mints[_i].stakeAmount);
+            }
             // Transfer the stake amount from the user
             token.safeTransferFrom(msg.sender, address(this), _mints[_i].stakeAmount);
             // Get the tokenId to use and increment it for the next usage
@@ -46,7 +51,7 @@ contract JBGovernanceNFT is ERC721Votes {
     function burn(JBGovernanceNFTBurn[] calldata _burns) external {
         for (uint256 _i; _i < _burns.length;) {
             // Make sure only the owner can do this
-            require(ownerOf(_burns[_i].tokenId) == msg.sender);
+            if (_ownerOf(_burns[_i].tokenId) != msg.sender) revert NO_PERMISSION(_burns[_i].tokenId);
             // Immedialty burn to prevernt reentrency
             _burn(_burns[_i].tokenId);
             // Release the stake
