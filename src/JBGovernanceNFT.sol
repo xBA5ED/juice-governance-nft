@@ -54,14 +54,20 @@ contract JBGovernanceNFT is ERC721Votes {
         token.transferFrom(address(this), _beneficiary, _amount);
     }
 
-    /**
-     * @dev See {ERC721-_beforeTokenTransfer}. Adjusts votes when tokens are transferred.
+
+     /**
+     * @dev See {ERC721-_afterTokenTransfer}. Adjusts votes when tokens are transferred.
+     *
+     * Emits a {IVotes-DelegateVotesChanged} event.
      */
-    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)
-        internal
-        virtual
-        override
-    {
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        // batchSize is used when is inherited `ERC721Consecutive`
+        // which we don't, so this should always be 1
         assert(batchSize == 1);
         uint256 _stakingTokenAmount = stakes[firstTokenId].amount;
 
@@ -74,7 +80,8 @@ contract JBGovernanceNFT is ERC721Votes {
             stakingTokenBalance[to] += _stakingTokenAmount;
         }
 
-        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+        _transferVotingUnits(from, to, _stakingTokenAmount);
+        super._afterTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
     /**
