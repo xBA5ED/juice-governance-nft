@@ -61,6 +61,9 @@ contract JBGovernanceNFT is ERC721Votes {
             token.transferFrom(address(this), _burns[_i].beneficiary, stakes[_burns[_i].tokenId].amount);
             // Delete the position
             delete stakes[_burns[_i].tokenId];
+            unchecked {
+                ++_i;
+            }
         }
     }
 
