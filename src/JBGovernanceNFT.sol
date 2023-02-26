@@ -17,7 +17,7 @@ contract JBGovernanceNFT is ERC721Votes {
     error INVALID_STAKE_AMOUNT(uint256 _i, uint256 _amount);
 
     IERC20 immutable token;
-    mapping(address => uint256) stakingTokenBalance;
+    mapping(address => uint256) public stakingTokenBalance;
     mapping(uint256 => JBGovernanceNFTStake) stakes;
 
     uint256 nextokenId = 1;
