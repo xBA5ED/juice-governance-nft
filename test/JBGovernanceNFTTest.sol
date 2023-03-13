@@ -31,7 +31,7 @@ contract JBGovernanceNFTTest is Test {
         vm.assume(_beneficiary != address(0));
 
         for(uint256 _i; _i < _amounts.length; _i++){
-            uint256 _amount = _amounts[_i];
+            uint200 _amount = _amounts[_i];
             vm.assume(_amount != 0);
             unchecked{
                 // If we overflow the combined amount will be less than the original
@@ -41,7 +41,8 @@ contract JBGovernanceNFTTest is Test {
 
             _mints[_i] = JBGovernanceNFTMint({
                 stakeAmount: _amount,
-                beneficiary: _beneficiary
+                beneficiary: _beneficiary,
+                stakeNFT: false
             });
         }
         // Make sure we have enough balance
