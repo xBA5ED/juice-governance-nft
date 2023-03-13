@@ -65,15 +65,20 @@ contract JBGovernanceNFT is ERC721Votes {
 
     function burn(JBGovernanceNFTBurn[] calldata _burns) external {
         for (uint256 _i; _i < _burns.length;) {
+            uint256 _tokenId = _burns[_i].tokenId;
             // Make sure only the owner can do this
-            if (_ownerOf(_burns[_i].tokenId) != msg.sender) revert NO_PERMISSION(_burns[_i].tokenId);
+            if (_ownerOf(_tokenId) != msg.sender) 
+                revert NO_PERMISSION(_tokenId);
+            // If the nft is staked it has to be unstaked first
+            if(stakes[_tokenId].stakedAt != address(0))
+                revert NFT_IS_STAKED(_tokenId, stakes[_tokenId].stakedAt);
             // Immedialty burn to prevernt reentrency
-            _burn(_burns[_i].tokenId);
+            _burn(_tokenId);
             // Release the stake
             // We can transfer before deleting from storage since the NFT is burned
             // Any attempt at reentrence will revert since the storage delete is non-critical
             // we are just recouping some gas cost
-            token.transferFrom(address(this), _burns[_i].beneficiary, stakes[_burns[_i].tokenId].amount);
+            token.transferFrom(address(this), _burns[_i].beneficiary, stakes[_tokenId].amount);
             // Delete the position
             delete stakes[_burns[_i].tokenId];
             unchecked {
@@ -89,7 +94,7 @@ contract JBGovernanceNFT is ERC721Votes {
             // Only the owner or a approved sender can stake the nft
             if(!_isApprovedOrOwner(_sender, _tokenId))
                 revert NO_PERMISSION(_tokenId);
-            // If a nft is already staked it has to be unstaked first
+            // If the nft is staked it has to be unstaked first
             if(stakes[_tokenId].stakedAt != address(0))
                 revert NFT_IS_STAKED(_tokenId, stakes[_tokenId].stakedAt);
             // Stake the nft at the sender address
