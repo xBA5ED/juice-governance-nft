@@ -27,16 +27,16 @@ contract JBGovernanceNFTTest is Test {
         JBGovernanceNFTMint[] memory _mints = new JBGovernanceNFTMint[](1);
         // Make sure we have enough balance
         vm.assume(_amount < stakeToken.totalSupply() && _amount != 0);
+        vm.assume(_beneficiary != address(0));
         // Give enough token allowance to be able to mint
         vm.startPrank(user);
         stakeToken.increaseAllowance(address(jbGovernanceNFT), _amount);
         // Perform the mint
         _mints[0] = JBGovernanceNFTMint({
             stakeAmount: _amount,
-            beneficiary: _beneficiary,
-            stakeNFT: false
+            beneficiary: _beneficiary
         });
-        jbGovernanceNFT.mint(_mints);
+        jbGovernanceNFT.mint_and_stake(_mints);
 
         assertEq(
             jbGovernanceNFT.stakingTokenBalance(_beneficiary),
@@ -67,13 +67,12 @@ contract JBGovernanceNFTTest is Test {
         // Perform the mint
         _mints[0] = JBGovernanceNFTMint({
             stakeAmount: _amount,
-            beneficiary: _beneficiary,
-            stakeNFT: false
+            beneficiary: _beneficiary
         });
 
         // This should revert as we have too little balance
         vm.expectRevert();
-        jbGovernanceNFT.mint(_mints);
+        jbGovernanceNFT.mint_and_stake(_mints);
 
         vm.stopPrank();
     }
@@ -96,8 +95,7 @@ contract JBGovernanceNFTTest is Test {
 
             _mints[_i] = JBGovernanceNFTMint({
                 stakeAmount: _amount,
-                beneficiary: _beneficiary,
-                stakeNFT: false
+                beneficiary: _beneficiary
             });
         }
         // Make sure we have enough balance
@@ -107,7 +105,7 @@ contract JBGovernanceNFTTest is Test {
         stakeToken.increaseAllowance(address(jbGovernanceNFT), _sumStaked);
 
         vm.prank(user);
-        jbGovernanceNFT.mint(_mints);
+        jbGovernanceNFT.mint_and_stake(_mints);
 
         assertEq(
             jbGovernanceNFT.stakingTokenBalance(_beneficiary),
